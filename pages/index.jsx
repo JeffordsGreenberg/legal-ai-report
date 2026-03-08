@@ -8,7 +8,7 @@ const T = {
   rule:      "#E2E0D8",
   mid:       "#8A8A8A",
   body:      "#3C3C3C",
-  ink:       "#141414",
+  ink:       "#141414"
   blue:      "#4A76C0",
   blueLight: "#EBF0FB",
   blueDark:  "#2E5298",
@@ -1938,11 +1938,11 @@ export default function App() {
       <meta property="og:description" content="Scored by real practitioners on what actually matters: integrations, research quality, automation, and where things are heading. Not a listicle. Not sponsored." />
       <meta property="og:type" content="website" />
       <meta property="og:url" content="https://laurajg.com/legal-ai" />
-      <meta property="og:image" content="https://laurajg.com/legal-ai-og.png" />
+      <meta property="og:image" content="https://legal-ai-report.laurajg.com/legal-ai-og.png" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content="AI Tools for Legal Teams · Independent Comparison Report" />
       <meta name="twitter:description" content="Scored by real practitioners on what actually matters. Not a listicle. Not sponsored." />
-      <meta name="twitter:image" content="https://laurajg.com/legal-ai-og.png" />
+      <meta name="twitter:image" content="https://legal-ai-report.laurajg.com/legal-ai-og.png" />
 
       {/* ── MASTHEAD ── */}
       <header style={{ background:T.white, borderBottom:"1px solid "+T.rule }}>
