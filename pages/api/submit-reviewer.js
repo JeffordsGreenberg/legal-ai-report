@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       "Sector":       { rich_text: [{ text: { content: identity.sector || "" } }] },
       "Company Size": { rich_text: [{ text: { content: identity.companySize || "" } }] },
       "Team Size":    { rich_text: [{ text: { content: identity.teamSize || "" } }] },
-      "LinkedIn":     { url: identity.linkedin || null },
+      "LinkedIn":     { rich_text: [{ text: { content: identity.linkedin || "" } }] },
       "Bio":          { rich_text: [{ text: { content: identity.bio || "" } }] },
       "Disclosure":   { rich_text: [{ text: { content: identity.disclosure || "No financial relationships declared" } }] },
       "Stack":        { rich_text: [{ text: { content: (stack || []).join(", ") } }] },
