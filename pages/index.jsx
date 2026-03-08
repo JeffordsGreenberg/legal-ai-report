@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 
 // ─── TOKENS ───────────────────────────────────────────────────────────────────
