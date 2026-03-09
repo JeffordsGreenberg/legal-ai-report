@@ -8,7 +8,7 @@ const T = {
   rule:      "#E2E0D8",
   mid:       "#8A8A8A",
   body:      "#3C3C3C",
-  ink:       "#141414"
+  ink:       "#141414",
   blue:      "#4A76C0",
   blueLight: "#EBF0FB",
   blueDark:  "#2E5298",
