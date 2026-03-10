@@ -1,10 +1,5 @@
 // pages/api/submit-reviewer.js
 // Receives reviewer form submissions → writes to Notion as "Pending"
-// You approve in Notion → status "Approved" → live on next load
-//
-// ENV VARS (set in Vercel dashboard):
-//   NOTION_API_KEY        — starts with secret_...
-//   NOTION_DB_REVIEWERS   — 32-char database ID from Notion page URL
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
@@ -30,29 +25,31 @@ export default async function handler(req, res) {
       "Company Size": { rich_text: [{ text: { content: identity.companySize || "" } }] },
       "Team Size":    { rich_text: [{ text: { content: identity.teamSize || "" } }] },
       "LinkedIn":     { rich_text: [{ text: { content: identity.linkedin || "" } }] },
-      "Bio":          { rich_text: [{ text: { content: identity.bio || "" } }] },
+      "Bio":          { rich_text: [{ text: { content: truncate(identity.bio || "", 1900) } }] },
       "Disclosure":   { rich_text: [{ text: { content: identity.disclosure || "No financial relationships declared" } }] },
-      "Stack":        { rich_text: [{ text: { content: (stack || []).join(", ") } }] },
-      "Scores":       { rich_text: [{ text: { content: truncate(JSON.stringify(
-        Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, r.scores || {}]))
-      )) } }] },
-      "Verdicts":     { rich_text: [{ text: { content: truncate(JSON.stringify(
-        Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, r.verdict || ""]))
-      )) } }] },
-      "Takes":        { rich_text: [{ text: { content: truncate(JSON.stringify(
-        Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, r.take || ""]))
-      )) } }] },
-      "Usage":        { rich_text: [{ text: { content: truncate(JSON.stringify(
-        Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, r.used || false]))
-      )) } }] },
-      "Scoring Note": { rich_text: [{ text: { content: philosophy?.scoringNote || "" } }] },
-      "Beliefs":      { rich_text: [{ text: { content: (philosophy?.beliefs || []).join(" | ") } }] },
-      "Pain Points":  { rich_text: [{ text: { content: (philosophy?.painPoints || []).join(" | ") } }] },
+      "Stack":        { rich_text: [{ text: { content: truncate(JSON.stringify({
+        techStack: (stack || []).join(", "),
+        scores: Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, r.scores || {}])),
+        verdicts: Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, { verdict: r.verdict || "", take: r.take || "" }])),
+        usage: Object.fromEntries(Object.entries(toolReviews || {}).map(([id, r]) => [id, r.used || false])),
+        scoringNote: philosophy?.scoringNote || "",
+        beliefs: (philosophy?.beliefs || []).join(" | "),
+        painPoints: (philosophy?.painPoints || []).join(" | "),
+      })) } }] },
       "Submitted At": { date: { start: submittedAt || new Date().toISOString() } },
     },
     children: [
-      { object: "block", type: "paragraph", paragraph: { rich_text: [{ type: "text", text: { content: `Bio: ${identity.bio}` } }] } },
-      { object: "block", type: "paragraph", paragraph: { rich_text: [{ type: "text", text: { content: `Disclosure: ${identity.disclosure || "None declared"}` } }] } },
+      { object: "block", type: "heading_3", heading_3: { rich_text: [{ type: "text", text: { content: "Reviewer Profile" } }] } },
+      { object: "block", type: "paragraph", paragraph: { rich_text: [{ type: "text", text: { content: "Bio: " + (identity.bio || "") } }] } },
+      { object: "block", type: "paragraph", paragraph: { rich_text: [{ type: "text", text: { content: "Disclosure: " + (identity.disclosure || "None declared") } }] } },
+      ...(identity.linkedin ? [{ object: "block", type: "paragraph", paragraph: { rich_text: [{ type: "text", text: { content: "LinkedIn: " + identity.linkedin } }] } }] : []),
+      { object: "block", type: "heading_3", heading_3: { rich_text: [{ type: "text", text: { content: "Tech Stack" } }] } },
+      { object: "block", type: "paragraph", paragraph: { rich_text: [{ type: "text", text: { content: (stack || []).join(", ") || "Not specified" } }] } },
+      { object: "block", type: "heading_3", heading_3: { rich_text: [{ type: "text", text: { content: "Tool Reviews" } }] } },
+      ...Object.entries(toolReviews || {}).filter(([,r]) => r.verdict).map(([id, r]) => ({
+        object: "block", type: "paragraph",
+        paragraph: { rich_text: [{ type: "text", text: { content: "Tool " + id + " | " + (r.verdict || "") + " | " + (r.take || "") } }] }
+      })),
     ],
   };
 
@@ -69,14 +66,14 @@ export default async function handler(req, res) {
 
     if (!r.ok) {
       const err = await r.json();
-      console.error("Notion error:", err);
-      return res.status(500).json({ message: err.message || "Notion write failed" });
+      console.error("Notion error:", JSON.stringify(err));
+      return res.status(500).json({ message: err.message || "Notion write failed", details: err });
     }
 
     const page = await r.json();
     return res.status(200).json({ success: true, id: page.id });
   } catch (err) {
-    console.error(err);
+    console.error("Submit error:", err);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
